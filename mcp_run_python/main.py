@@ -22,6 +22,7 @@ def run_mcp_server(
     mode: Mode,
     *,
     http_port: int | None = None,
+    http_host: str | None = None,
     dependencies: list[str] | None = None,
     return_mode: Literal['json', 'xml'] = 'xml',
     deps_log_handler: LogHandler | None = None,
@@ -41,6 +42,7 @@ def run_mcp_server(
         mode,
         dependencies=dependencies,
         http_port=http_port,
+        http_host=http_host,
         return_mode=return_mode,
         deps_log_handler=deps_log_handler,
         allow_networking=allow_networking,
@@ -70,6 +72,7 @@ def prepare_deno_env(
     mode: Mode,
     *,
     http_port: int | None = None,
+    http_host: str | None = None,
     dependencies: list[str] | None = None,
     return_mode: Literal['json', 'xml'] = 'xml',
     deps_log_handler: LogHandler | None = None,
@@ -173,6 +176,7 @@ def _deno_run_args(
     mode: Mode,
     *,
     http_port: int | None = None,
+    http_host: str | None = None,
     dependencies: list[str] | None = None,
     return_mode: Literal['json', 'xml'] = 'xml',
     allow_networking: bool = True,
@@ -189,11 +193,13 @@ def _deno_run_args(
     ]
     if dependencies is not None:
         args.append(f'--deps={",".join(dependencies)}')
-    if http_port is not None:
-        if mode == 'streamable_http':
+    if mode == 'streamable_http':
+        if http_port is not None:
             args.append(f'--port={http_port}')
-        else:
-            raise ValueError('Port is only supported for `streamable_http` mode')
+        if http_host is not None:
+            args.append(f'--host={http_host}')
+    elif http_port is not None or http_host is not None:
+        raise ValueError('Port and host are only supported for `streamable_http` mode')
     return args
 
 

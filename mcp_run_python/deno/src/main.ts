@@ -20,8 +20,8 @@ const VERSION = '0.0.13'
 export async function main() {
   const { args } = Deno
   const flags = parseArgs(Deno.args, {
-    string: ['deps', 'return-mode', 'port'],
-    default: { port: '3001', 'return-mode': 'xml' },
+    string: ['deps', 'return-mode', 'port', 'host'],
+    default: { port: '3001', host: '127.0.0.1', 'return-mode': 'xml' },
   })
   const deps = flags.deps?.split(',') ?? []
   if (args.length >= 1) {
@@ -30,7 +30,8 @@ export async function main() {
       return
     } else if (args[0] === 'streamable_http') {
       const port = parseInt(flags.port)
-      runStreamableHttp(port, deps, flags['return-mode'])
+  const host = flags.host
+      runStreamableHttp(port, host, deps, flags['return-mode'])
       return
     } else if (args[0] === 'example') {
       await example(deps)
@@ -167,7 +168,7 @@ function httpSetJsonResponse(res: http.ServerResponse, status: number, text: str
 /*
  * Run the MCP server using the Streamable HTTP transport
  */
-function runStreamableHttp(port: number, deps: string[], returnMode: string) {
+function runStreamableHttp(port: number, host: string, deps: string[], returnMode: string) {
   // https://github.com/modelcontextprotocol/typescript-sdk?tab=readme-ov-file#with-session-management
   const mcpServer = createServer(deps, returnMode)
   const transports: { [sessionId: string]: StreamableHTTPServerTransport } = {}
@@ -244,8 +245,8 @@ function runStreamableHttp(port: number, deps: string[], returnMode: string) {
     }
   })
 
-  server.listen(port, () => {
-    console.log(`Listening on port ${port}`)
+  server.listen(port, host, () => {
+    console.log(`Listening on ${host}:${port}`)
   })
 }
 
