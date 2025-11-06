@@ -49,7 +49,8 @@ def run_mcp_server(
         allow_networking=allow_networking,
     ) as env:
         if mode == 'streamable_http':
-            logger.info('Running mcp-run-python via %s on %s:%d...', mode, http_host, http_port)
+            port_display = http_port if http_port is not None else 3001
+            logger.info('Running mcp-run-python via %s on %s:%d...', mode, http_host, port_display)
         else:
             logger.info('Running mcp-run-python via %s...', mode)
 

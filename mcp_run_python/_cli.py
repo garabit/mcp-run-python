@@ -51,10 +51,12 @@ def cli_logic(args_list: Sequence[str] | None = None) -> int:
         deps: list[str] = args.deps.split(',') if args.deps else []
         # Get host from CLI arg or environment variable, default to 127.0.0.1
         http_host = args.host or os.environ.get('HOST', '127.0.0.1')
+        # Default port to 3001 if not specified (for streamable-http mode)
+        http_port = args.port if args.port is not None else 3001
         return_code = run_mcp_server(
             args.mode.replace('-', '_'),
             allow_networking=not args.disable_networking,
-            http_port=args.port,
+            http_port=http_port,
             http_host=http_host,
             dependencies=deps,
             deps_log_handler=deps_log_handler,
