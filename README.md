@@ -34,7 +34,7 @@ To use this server, you must have both Python and [Deno](https://deno.com/) inst
 The server can be run with `deno` installed using `uvx`:
 
 ```bash
-uvx mcp-run-python [-h] [--version] [--port PORT] [--deps DEPS] {stdio,streamable-http,example}
+uvx mcp-run-python [-h] [--version] [--port PORT] [--host HOST] [--deps DEPS] {stdio,streamable-http,example}
 ```
 
 where:
@@ -48,6 +48,28 @@ where:
   does not require the client to hold a stateful connection like SSE
 - `example` will run a minimal Python script using `numpy`, useful for checking that the package is working, for the code
   to run successfully, you'll need to install `numpy` using `uvx mcp-run-python --deps numpy example`
+
+### Additional Options
+
+- `--port PORT`: Specify the port for the HTTP server (default: 3001, only for `streamable-http` mode)
+- `--host HOST`: Specify the host address to bind to (default: 127.0.0.1, only for `streamable-http` mode). Can also be set via the `HOST` environment variable.
+
+#### Examples
+
+Run the server on all interfaces (accessible from LAN/containers):
+```bash
+uvx mcp-run-python --port 9000 --host 0.0.0.0 streamable-http
+```
+
+Or using environment variable:
+```bash
+HOST=0.0.0.0 uvx mcp-run-python --port 9000 streamable-http
+```
+
+Run on localhost only (default):
+```bash
+uvx mcp-run-python --port 9000 streamable-http
+```
 
 ## Usage with Pydantic AI
 

@@ -22,6 +22,7 @@ def run_mcp_server(
     mode: Mode,
     *,
     http_port: int | None = None,
+    http_host: str = '127.0.0.1',
     dependencies: list[str] | None = None,
     return_mode: Literal['json', 'xml'] = 'xml',
     deps_log_handler: LogHandler | None = None,
@@ -32,6 +33,7 @@ def run_mcp_server(
     Args:
         mode: The mode to run the server in.
         http_port: The port to run the server on if mode is `streamable_http`.
+        http_host: The host address to bind to if mode is `streamable_http`. Defaults to '127.0.0.1'.
         dependencies: The dependencies to install.
         return_mode: The mode to return tool results in.
         deps_log_handler: Optional function to receive logs emitted while installing dependencies.
@@ -41,12 +43,14 @@ def run_mcp_server(
         mode,
         dependencies=dependencies,
         http_port=http_port,
+        http_host=http_host,
         return_mode=return_mode,
         deps_log_handler=deps_log_handler,
         allow_networking=allow_networking,
     ) as env:
         if mode == 'streamable_http':
-            logger.info('Running mcp-run-python via %s on port %d...', mode, http_port)
+            port_display = http_port if http_port is not None else 3001
+            logger.info('Running mcp-run-python via %s on %s:%d...', mode, http_host, port_display)
         else:
             logger.info('Running mcp-run-python via %s...', mode)
 
@@ -70,6 +74,7 @@ def prepare_deno_env(
     mode: Mode,
     *,
     http_port: int | None = None,
+    http_host: str = '127.0.0.1',
     dependencies: list[str] | None = None,
     return_mode: Literal['json', 'xml'] = 'xml',
     deps_log_handler: LogHandler | None = None,
@@ -84,6 +89,7 @@ def prepare_deno_env(
     Args:
         mode: The mode to run the server in.
         http_port: The port to run the server on if mode is `streamable_http`.
+        http_host: The host address to bind to if mode is `streamable_http`. Defaults to '127.0.0.1'.
         dependencies: The dependencies to install.
         return_mode: The mode to return tool results in.
         deps_log_handler: Optional function to receive logs emitted while installing dependencies.
@@ -118,6 +124,7 @@ def prepare_deno_env(
         args = _deno_run_args(
             mode,
             http_port=http_port,
+            http_host=http_host,
             dependencies=dependencies,
             return_mode=return_mode,
             allow_networking=allow_networking,
@@ -133,6 +140,7 @@ async def async_prepare_deno_env(
     mode: Mode,
     *,
     http_port: int | None = None,
+    http_host: str = '127.0.0.1',
     dependencies: list[str] | None = None,
     return_mode: Literal['json', 'xml'] = 'xml',
     deps_log_handler: LogHandler | None = None,
@@ -143,6 +151,7 @@ async def async_prepare_deno_env(
         prepare_deno_env,
         mode,
         http_port=http_port,
+        http_host=http_host,
         dependencies=dependencies,
         return_mode=return_mode,
         deps_log_handler=deps_log_handler,
@@ -158,7 +167,7 @@ def _deno_install_args(dependencies: list[str] | None = None) -> list[str]:
     args = [
         'run',
         '--allow-net',
-        '--allow-read=./node_modules',
+        '--allow-read',
         '--allow-write=./node_modules',
         '--node-modules-dir=auto',
         'src/main.ts',
@@ -173,6 +182,7 @@ def _deno_run_args(
     mode: Mode,
     *,
     http_port: int | None = None,
+    http_host: str = '127.0.0.1',
     dependencies: list[str] | None = None,
     return_mode: Literal['json', 'xml'] = 'xml',
     allow_networking: bool = True,
@@ -181,7 +191,7 @@ def _deno_run_args(
     if allow_networking:
         args += ['--allow-net']
     args += [
-        '--allow-read=./node_modules',
+        '--allow-read',
         '--node-modules-dir=auto',
         'src/main.ts',
         mode,
@@ -194,6 +204,11 @@ def _deno_run_args(
             args.append(f'--port={http_port}')
         else:
             raise ValueError('Port is only supported for `streamable_http` mode')
+    if http_host != '127.0.0.1':
+        if mode == 'streamable_http':
+            args.append(f'--host={http_host}')
+        else:
+            raise ValueError('Host is only supported for `streamable_http` mode')
     return args
 
 
