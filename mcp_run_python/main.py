@@ -167,7 +167,7 @@ def _deno_install_args(dependencies: list[str] | None = None) -> list[str]:
     args = [
         'run',
         '--allow-net',
-        '--allow-read=./node_modules',
+        '--allow-read',
         '--allow-write=./node_modules',
         '--node-modules-dir=auto',
         'src/main.ts',
@@ -191,7 +191,7 @@ def _deno_run_args(
     if allow_networking:
         args += ['--allow-net']
     args += [
-        '--allow-read=./node_modules',
+        '--allow-read',
         '--node-modules-dir=auto',
         'src/main.ts',
         mode,
